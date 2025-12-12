@@ -26,50 +26,64 @@
         // Metode Abstrak: Harus diimplementasikan oleh kelas anak (Polymorphism)
         public abstract void HitungSkor();
         public abstract decimal HitungTotalGaji();
-
-        // Metode Umum
-        public decimal HitungBonusKinerja()
-        {
-            // Contoh logika: Bonus berdasarkan fitur selesai dikurangi penalty bug
-            return (FiturSelesai * 500000) - (JumlahBug * 100000);
-        }
     }
 
-    // --- KELAS ANAK 1 (INHERITANCE) ---
+    // --- KELAS ANAK 1 (INHERITANCE) - FULLTIME ---
     public class DeveloperTetap : DeveloperBase
     {
         // Properti spesifik untuk Developer Tetap
-        public decimal GajiPokokBulanan { get; set; } = 8000000;
+        public decimal GajiPokokBulanan { get; set; } = 5000000;
 
         public override void HitungSkor()
         {
-            // Skor untuk Developer Tetap: Fitur * 10 - Bug * 5
+            // Skor untuk Developer Tetap: Skor = 10 × Fitur − 5 × Bug
             Skor = (FiturSelesai * 10) - (JumlahBug * 5);
         }
 
         public override decimal HitungTotalGaji()
         {
-            // Gaji Tetap = Gaji Pokok + Bonus Kinerja
-            return GajiPokokBulanan + HitungBonusKinerja();
+            // Total Gaji = Gaji Pokok + Skor × Rp20.000,00
+            return GajiPokokBulanan + (Skor * 20000);
         }
     }
 
-    // --- KELAS ANAK 2 (INHERITANCE) ---
+    // --- KELAS ANAK 2 (INHERITANCE) - FREELANCER ---
     public class DeveloperFreelancer : DeveloperBase
     {
-        // Properti spesifik untuk Freelancer
-        public decimal BiayaPerFitur { get; set; } = 1500000;
-
         public override void HitungSkor()
         {
-            // Skor untuk Freelancer: Fitur * 15 - Bug * 3
-            Skor = (FiturSelesai * 15) - (JumlahBug * 3);
+            // Skor untuk Freelancer: Skor = 100 × (1 − 2×Bug / 3×Fitur)
+            // Jika Fitur = 0, Skor = 0 (untuk menghindari pembagian dengan 0)
+            if (FiturSelesai == 0)
+            {
+                Skor = 0;
+            }
+            else
+            {
+                // Hitung dengan rumus: 100 * (1 - (2 * Bug) / (3 * Fitur))
+                decimal calculation = 100 * (1 - (decimal)(2 * JumlahBug) / (3 * FiturSelesai));
+                // Skor tidak boleh kurang dari 0
+                Skor = (int)Math.Max(0, calculation);
+            }
         }
 
         public override decimal HitungTotalGaji()
         {
-            // Gaji Freelancer = (Fitur Selesai * Biaya Per Fitur) + Bonus Kinerja
-            return (FiturSelesai * BiayaPerFitur) + HitungBonusKinerja();
+            // Total Gaji berdasarkan Skor:
+            // Skor ≥ 80: Rp500.000,00 × Fitur
+            // 50 ≤ Skor < 80: Rp400.000,00 × Fitur
+            // Skor < 50: Rp250.000,00 × Fitur
+
+            decimal biayaPerFitur;
+
+            if (Skor >= 80)
+                biayaPerFitur = 500000;
+            else if (Skor >= 50)
+                biayaPerFitur = 400000;
+            else
+                biayaPerFitur = 250000;
+
+            return FiturSelesai * biayaPerFitur;
         }
     }
 
